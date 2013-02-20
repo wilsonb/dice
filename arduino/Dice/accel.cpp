@@ -177,12 +177,12 @@ void initMMA8452(byte fsr, byte dataRate)
    4. Set the pulse latency - the minimum required time between one pulse and the next
    5. Set the second pulse window - maximum allowed time between end of latency and start of second pulse
    for more info check out this app note: http://cache.freescale.com/files/sensors/doc/app_note/AN4072.pdf */
-  writeRegister(0x21, 0x7F);  // 1. enable single/double taps on all axes
-  // writeRegister(0x21, 0x55);  // 1. single taps only on all axes
+  //writeRegister(0x21, 0x7F);  // 1. enable single/double taps on all axes
+   writeRegister(0x21, 0x55);  // 1. single taps only on all axes
   // writeRegister(0x21, 0x6A);  // 1. double taps only on all axes
-  writeRegister(0x23, 0x20);  // 2. x thresh at 2g, multiply the value by 0.0625g/LSB to get the threshold
-  writeRegister(0x24, 0x20);  // 2. y thresh at 2g, multiply the value by 0.0625g/LSB to get the threshold
-  writeRegister(0x25, 0x08);  // 2. z thresh at .5g, multiply the value by 0.0625g/LSB to get the threshold
+  writeRegister(0x23, 0x40);  // 2. x thresh at 4g, multiply the value by 0.0625g/LSB to get the threshold
+  writeRegister(0x24, 0x40);  // 2. y thresh at 4g, multiply the value by 0.0625g/LSB to get the threshold
+  writeRegister(0x25, 0x40);  // 2. z thresh at 4g, multiply the value by 0.0625g/LSB to get the threshold
   writeRegister(0x26, 0x30);  // 3. 30ms time limit at 800Hz odr, this is very dependent on data rate, see the app note
   writeRegister(0x27, 0xA0);  // 4. 200ms (at 800Hz odr) between taps min, this also depends on the data rate
   writeRegister(0x28, 0xFF);  // 5. 318ms (max value) between taps max

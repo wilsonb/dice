@@ -16,7 +16,7 @@ const int numdisplays = 1;
 
 byte val[numdisplays];
 
-#define ANODE //ANODE = Common Anode Display CATHODE = Common Cathode Display
+#define CATHODE //ANODE = Common Anode Display CATHODE = Common Cathode Display
 //byte val = B01100000;
 //Array to output individual segments
 

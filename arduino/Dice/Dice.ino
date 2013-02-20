@@ -15,23 +15,23 @@
 */
 #include "display.h"
 #include "accel.h"
+#include <math.h>
 
 
-int accelCount[3];  // Stores the 12-bit signed value
-float accelG[3];  // Stores the real accel value in g's
+int accelCount[3]; // Stores the 12-bit signed value
+float accelG[3];   // Stores the real accel value in g's
+float accelmag;    // magnitude of acceleration
+byte source;       // used for register value
+int state;
 
 const byte SCALE = 2;  // Sets full-scale range to +/-2, 4, or 8g. Used to calc real g values.
 // Set the output data rate below. Value should be between 0 and 7
 const byte dataRate = 0;  // 0=800Hz, 1=400, 2=200, 3=100, 4=50, 5=12.5, 6=6.25, 7=1.56
   
-  // Pin definitions
+// Pin definitions
 int int1Pin = 2;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 int int2Pin = 3;
 
-//switch debounce
-int val1=0;         // val will be used to store the button on/off state
-int old_val=0;     // stores previous val
-int state=0;       // stores switch on/off state
 
 int roll;          // random number
 
@@ -53,8 +53,8 @@ void setup() {
 }
 
 void loop() {
-  
-  //Read accelerometer baseline data
+  state = 0;
+  //Read accelerometer data for toss influenced random seed
   if (digitalRead(int1Pin)==1) {
       readAccelData(accelCount);
   
@@ -64,31 +64,35 @@ void loop() {
     }
   } 
   
+  //Detect a tap
   
-    
-    state = 0;
-  //val1 = digitalRead(BUTTON);  //read input value and store it.
-  if((val1==HIGH) && (old_val == LOW)){
-    state = 1 - state;
-    delay(10); 
+  if (digitalRead(int2Pin)==1)  //if int2 goes high, either p/l has changed or there's been a tap
+  {
+    source = readRegister(0x22);  //Read interrupt
+    if ((source & 0x80)==0x80)  //0x80 is the Event Active bit in the pulse source byte
+    {
+      //With Tap detected, start roll routine
+      accelmag = sqrt(square(accelG[0]) + square(accelG[1]) + square(accelG[2])); 
+      randomSeed(accelmag);
+      roll = random(1,7);  //need to create function to allow for different roll configurations
+      output[0] = roll;  //store roll
+      state = 1;
+    }
+  
+   //DETECT ACCELEROMETER ORIENTATION AND MAKE OUTPUT VERTICAL
   }
-  
-  old_val = val1;  // store previous button value
-  
-  if (state == 1) {
-    //run roll sequence
-    roll = random(1,7);
-    output[0] = roll;
-  for (int i1 = 0; i1 < 3; i1++) {  
+  //Run loader animation to show dice rolling
+  if (state == 1) 
+  {
+      for (int i1 = 0; i1 < 3; i1++) {  
           loaderanimation();       
-    } 
-    delay(100);
-    sevenSegWrite(output);  //display roll number
-    delay(1000);  // 10 second delay
-  } else {
-    output[0] = 10;
-    sevenSegWrite(output); //dim display
-  }    
+      } 
+      delay(100);
+      sevenSegWrite(output);  //display roll number
+      delay(1000);  // 1 second delay
+  
+  } 
+      
 }
 
 
@@ -99,5 +103,6 @@ void loaderanimation() {
     loading(load);
     delay(50);
   }
+  blank();
 }
 
